@@ -6,16 +6,22 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+// Yahan check karein ke API_KEY mil rahi hai
 const genAI = new GoogleGenerativeAI(process.env.API_KEY);
 
 app.post('/generate', async (req, res) => {
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-        const result = await model.generateContent(req.body.prompt);
-        res.json({ text: result.response.text() });
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); // "gemini-pro" ki jagah "gemini-1.5-flash" use karein
+        const prompt = req.body.prompt;
+        
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        res.json({ text: response.text() });
     } catch (error) {
+        console.error("Error Details:", error);
         res.status(500).json({ error: error.message });
     }
 });
 
-app.listen(process.env.PORT || 3000);
+// Vercel ke liye module.exports zaroori hai
+module.exports = app;
