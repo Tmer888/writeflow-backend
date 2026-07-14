@@ -6,22 +6,20 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Yahan check karein ke API_KEY mil rahi hai
-const genAI = new GoogleGenerativeAI(process.env.API_KEY);
-
 app.post('/generate', async (req, res) => {
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); // "gemini-pro" ki jagah "gemini-1.5-flash" use karein
-        const prompt = req.body.prompt;
+        if (!process.env.API_KEY) throw new Error("API Key missing on server");
         
-        const result = await model.generateContent(prompt);
+        const genAI = new GoogleGenerativeAI(process.env.API_KEY);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        
+        const result = await model.generateContent(req.body.prompt);
         const response = await result.response;
         res.json({ text: response.text() });
     } catch (error) {
-        console.error("Error Details:", error);
-        res.status(500).json({ error: error.message });
+        console.error("DEBUG ERROR:", error.message);
+        res.status(500).json({ text: "Error: " + error.message });
     }
 });
 
-// Vercel ke liye module.exports zaroori hai
 module.exports = app;
