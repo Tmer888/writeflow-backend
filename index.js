@@ -8,12 +8,20 @@ app.use(cors());
 
 app.post('/generate', async (req, res) => {
     try {
-        if (!process.env.API_KEY) throw new Error("API Key missing on server");
+        if (!process.env.API_KEY) {
+            throw new Error("API Key missing on server");
+        }
         
         const genAI = new GoogleGenerativeAI(process.env.API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        // Yahan model ka naam update kar diya hai
+        const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
         
-        const result = await model.generateContent(req.body.prompt);
+        const prompt = req.body.prompt;
+        if (!prompt) {
+            throw new Error("No prompt provided");
+        }
+
+        const result = await model.generateContent(prompt);
         const response = await result.response;
         res.json({ text: response.text() });
     } catch (error) {
